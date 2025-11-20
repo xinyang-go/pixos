@@ -50,12 +50,7 @@ pub const Interrupt = blk: {
     } });
 };
 
-pub const Tag = enum {
-    exception,
-    interrupt,
-};
-
-pub const IRQ = union(Tag) {
+pub const IRQ = union(enum) {
     exception: Exception,
     interrupt: Interrupt,
 };

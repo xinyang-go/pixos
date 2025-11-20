@@ -4,8 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.resolveTargetQuery(.{
         .cpu_arch = .thumb,
         .os_tag = .freestanding,
-        .abi = .none,
-        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m4 },
+        .abi = .eabi,
+        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
         // !fpu [cortex-m4 and above]
         // .cpu_features_add = std.Target.arm.featureSet(&.{.vfp4d16sp}),
     });
@@ -25,20 +25,10 @@ pub fn build(b: *std.Build) void {
         .imports = &.{.{ .name = "pixos", .module = pixos }},
     });
 
-    const startup = b.createModule(.{
-        .target = target,
-        .optimize = optimize,
-        .root_source_file = b.path("src/startup.zig"),
-    });
-
     const firmware = b.addExecutable(.{
-        .name = "pixos_app",
+        .name = "app",
         .root_module = app,
     });
-    firmware.addObject(b.addObject(.{
-        .name = "startup",
-        .root_module = startup,
-    }));
     firmware.setLinkerScript(b.path("src/pixos.lds"));
     firmware.link_gc_sections = true;
     firmware.link_data_sections = true;

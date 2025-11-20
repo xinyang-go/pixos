@@ -1,9 +1,8 @@
 const cpu = @import("builtin").cpu;
 const isr = @import("core/isr.zig");
 
-export const stack: [1024]u8 linksection(".stack") = undefined;
-
 extern const _estack: usize;
+export const stack: [1024]u8 linksection(".stack") = undefined;
 export const msp: *const usize linksection(".vector.msp") = &_estack;
 export const exception linksection(".vector.exception") = blk: {
     var vector: [15]?*const isr.Fn = undefined;
@@ -29,8 +28,6 @@ extern var _ldata: u32;
 extern var _sbss: u32;
 extern var _ebss: u32;
 
-extern fn main() void;
-
 export fn _start() callconv(.c) void {
     // initialize .data
     var ldata: [*]u8 = @ptrCast(&_ldata);
@@ -49,41 +46,17 @@ export fn _start() callconv(.c) void {
         sbss += 1;
     }
     // jump to main
-    main();
-    // halt if main returns
-    while (true) {}
-}
-
-fn block_isr() callconv(.c) noreturn {
-    while (true) {}
-}
-
-fn empty_isr() callconv(.c) void {
-    return;
+    @import("pixos.zig")._main();
 }
 
 comptime {
-    // exception
-    @export(&_start, .{ .name = @tagName(@as(isr.Exception, .Reset)), .linkage = .strong });
-    @export(&empty_isr, .{ .name = @tagName(@as(isr.Exception, .NonMaskableInt)), .linkage = .weak });
-    @export(&block_isr, .{ .name = @tagName(@as(isr.Exception, .HardFault)), .linkage = .weak });
-    if (!cpu.hasAny(.arm, &.{.v6m})) {
-        @export(&block_isr, .{ .name = @tagName(@as(isr.Exception, .MemoryManagement)), .linkage = .weak });
-        @export(&block_isr, .{ .name = @tagName(@as(isr.Exception, .BusFault)), .linkage = .weak });
-        @export(&block_isr, .{ .name = @tagName(@as(isr.Exception, .UsageFault)), .linkage = .weak });
-    }
-    // TODO: Secure Fault Interrupt [only on Armv8-M]
-    @export(&empty_isr, .{ .name = @tagName(@as(isr.Exception, .SVCall)), .linkage = .weak });
-    if (!cpu.hasAny(.arm, &.{.v6m})) {
-        @export(&empty_isr, .{ .name = @tagName(@as(isr.Exception, .DebugMonitor)), .linkage = .weak });
-    }
-    @export(&empty_isr, .{ .name = @tagName(@as(isr.Exception, .PendSV)), .linkage = .weak });
-    @export(&empty_isr, .{ .name = @tagName(@as(isr.Exception, .SysTick)), .linkage = .weak });
-    // interrupt
-    var irq_num: u32 = undefined;
-    if (cpu.hasAny(.arm, &.{.v6m})) irq_num = 32;
-    if (cpu.hasAny(.arm, &.{ .v7m, .v7em })) irq_num = 240;
-    for (0..irq_num) |index| {
-        @export(&empty_isr, .{ .name = @tagName(@as(isr.Interrupt, @enumFromInt(index))), .linkage = .weak });
-    }
+    isr.set(.{ .exception = .Reset }, &_start);
+}
+
+export fn BlockISR() callconv(.c) noreturn {
+    while (true) {}
+}
+
+export fn EmptyISR() callconv(.c) void {
+    return;
 }
