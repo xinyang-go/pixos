@@ -1,0 +1,11 @@
+.{
+    .name = .pixos,
+    .version = "0.1.0",
+    .minimum_zig_version = "0.15.2",
+    .paths = .{
+        "src",
+        "build.zig",
+        "build.zig.zon",
+    },
+    .fingerprint = 0x855c15dcd3e22f5,
+}
