@@ -4,3 +4,4 @@ comptime {
 }
 
 pub const isr = @import("core/isr.zig");
+pub const reg = @import("core/reg.zig");
