@@ -35,6 +35,6 @@ pub fn build(b: *std.Build) void {
     firmware.link_function_sections = true;
     b.installArtifact(firmware);
 
-    const clean = b.addSystemCommand(&[_][]const u8{ "rm", "-rf", ".zig-cache", "zig-out" });
+    const clean = b.addSystemCommand(&.{ "rm", "-rf", ".zig-cache", "zig-out" });
     b.step("clean", "Clean all build cache").dependOn(&clean.step);
 }
