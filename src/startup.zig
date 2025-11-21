@@ -50,6 +50,7 @@ export fn _start() callconv(.c) void {
 }
 
 fn _main() noreturn {
+    @import("core/init.zig").call();
     const main = @import("root").main;
     switch (@typeInfo(@typeInfo(@TypeOf(main)).@"fn".return_type.?)) {
         .error_union => _ = main() catch {},

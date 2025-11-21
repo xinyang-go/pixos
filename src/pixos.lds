@@ -10,6 +10,21 @@ SECTIONS
         KEEP(*(.vector.interrupt))
     } > FLASH
 
+    .pixos.init :
+    {
+        . = ALIGN(4);
+        __pixos_init_start = .;
+        KEEP(*(.pixos.init.0))
+        KEEP(*(.pixos.init.1))
+        KEEP(*(.pixos.init.2))
+        KEEP(*(.pixos.init.3))
+        KEEP(*(.pixos.init.4))
+        KEEP(*(.pixos.init.5))
+        KEEP(*(.pixos.init.6))
+        KEEP(*(.pixos.init.7))
+        __pixos_init_end = .;
+    } > FLASH
+
     .rodata :
     {
         . = ALIGN(4);
