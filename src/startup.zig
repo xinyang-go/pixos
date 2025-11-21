@@ -46,7 +46,16 @@ export fn _start() callconv(.c) void {
         sbss += 1;
     }
     // jump to main
-    @import("pixos.zig")._main();
+    _main();
+}
+
+fn _main() noreturn {
+    const main = @import("root").main;
+    switch (@typeInfo(@typeInfo(@TypeOf(main)).@"fn".return_type.?)) {
+        .error_union => _ = main() catch {},
+        else => _ = main(),
+    }
+    while (true) {}
 }
 
 comptime {
