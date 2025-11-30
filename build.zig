@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
         .cpu_arch = .thumb,
         .os_tag = .freestanding,
         .abi = .eabi,
-        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m0plus },
+        .cpu_model = .{ .explicit = &std.Target.arm.cpu.cortex_m3 },
         // !fpu [cortex-m4 and above]
         // .cpu_features_add = std.Target.arm.featureSet(&.{.vfp4d16sp}),
     });
@@ -16,6 +16,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
         .root_source_file = b.path("src/pixos.zig"),
+        .strip = false,
     });
 
     const app = b.createModule(.{
@@ -23,6 +24,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .root_source_file = b.path("app/main.zig"),
         .imports = &.{.{ .name = "pixos", .module = pixos }},
+        .strip = false,
     });
 
     const firmware = b.addExecutable(.{
@@ -37,4 +39,13 @@ pub fn build(b: *std.Build) void {
 
     const clean = b.addSystemCommand(&.{ "rm", "-rf", ".zig-cache", "zig-out" });
     b.step("clean", "Clean all build cache").dependOn(&clean.step);
+
+    const run = b.addSystemCommand(&.{ "qemu-system-arm", "-M", "stm32vldiscovery", "-nographic", "-kernel", "zig-out/bin/app" });
+    b.step("run", "Run with qemu").dependOn(&run.step);
+
+    const debug = b.addSystemCommand(&.{ "qemu-system-arm", "-M", "stm32vldiscovery", "-nographic", "-kernel", "zig-out/bin/app", "-s", "-S" });
+    b.step("debug", "Debug with qemu").dependOn(&debug.step);
+
+    const gdb = b.addSystemCommand(&.{ "gdb-multiarch", "-tui", "zig-out/bin/app", "-ex", "target remote localhost:1234" });
+    b.step("gdb", "Run gdb and connect remote server").dependOn(&gdb.step);
 }

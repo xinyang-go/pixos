@@ -55,7 +55,7 @@ pub const IRQ = union(enum) {
     interrupt: Interrupt,
 };
 
-pub const Fn = fn () callconv(.c) void;
+pub const Fn = anyopaque;
 
 pub fn get_exception(comptime irq: Exception) ?*const Fn {
     return switch (irq) {
